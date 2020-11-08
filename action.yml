@@ -1,0 +1,10 @@
+name: 'Linter'
+author: 'Rahul Kadyan <hey@znck.dev>'
+description: 'Run eslint and prettier on source code'
+inputs:
+  token:
+    description: 'GitHub access token to raise a fix PR'
+    required: true
+runs:
+  using: 'node12'
+  main: 'lib/index.js'
