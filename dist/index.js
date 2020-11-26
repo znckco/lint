@@ -5816,24 +5816,14 @@ __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions/core@1.2.6/node_modules/@actions/core/lib/core.js
 var core = __webpack_require__(533);
-var core_default = /*#__PURE__*/__webpack_require__.n(core);
-
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions/github@4.0.0/node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(465);
-var github_default = /*#__PURE__*/__webpack_require__.n(github);
-
 // CONCATENATED MODULE: external "child_process"
 const external_child_process_namespaceObject = require("child_process");;
-var external_child_process_default = /*#__PURE__*/__webpack_require__.n(external_child_process_namespaceObject);
-
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __webpack_require__(747);
-var external_fs_default = /*#__PURE__*/__webpack_require__.n(external_fs_);
-
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(622);
-var external_path_default = /*#__PURE__*/__webpack_require__.n(external_path_);
-
 // CONCATENATED MODULE: ./src/index.ts
 
 
@@ -5841,18 +5831,20 @@ var external_path_default = /*#__PURE__*/__webpack_require__.n(external_path_);
 
 
 const options = {
-    token: core_default().getInput('token'),
-    fix: !!(github_default()).context.payload.pull_request,
-    pr: (github_default()).context.payload.pull_request ? (github_default()).context.payload.pull_request.number : null,
+    token: (0,core.getInput)("token"),
+    fix: !!github.context.payload.pull_request,
+    pr: github.context.payload.pull_request ? github.context.payload.pull_request.number : null,
     directory: process.cwd(),
     workspace: process.env.GITHUB_WORKSPACE || process.cwd(),
 };
 const octa = (0,github.getOctokit)(options.token);
 function getBinaryUsing(packageManager, directory, name) {
-    const binaryDirectory = external_child_process_default().execSync(`${packageManager} bin`, { cwd: directory }).toString().trim();
-    const binary = external_path_default().resolve(binaryDirectory, name);
+    const binaryDirectory = (0,external_child_process_namespaceObject.execSync)(`${packageManager} bin`, { cwd: directory })
+        .toString()
+        .trim();
+    const binary = external_path_.resolve(binaryDirectory, name);
     try {
-        external_child_process_default().execSync(`${binary} --version`);
+        (0,external_child_process_namespaceObject.execSync)(`${binary} --version`);
         return binary;
     }
     catch {
@@ -5860,19 +5852,19 @@ function getBinaryUsing(packageManager, directory, name) {
     }
 }
 function getBinary(directory, name) {
-    const isFile = (file) => external_fs_default().existsSync(external_path_default().resolve(directory, file));
-    if (isFile('pnpm-lock.yaml'))
-        return getBinaryUsing('pnpm', directory, name);
-    if (isFile('yarn.lock'))
-        return getBinaryUsing('yarn', directory, name);
-    return getBinaryUsing('npm', directory, name);
+    const isFile = (file) => external_fs_.existsSync(external_path_.resolve(directory, file));
+    if (isFile("pnpm-lock.yaml"))
+        return getBinaryUsing("pnpm", directory, name);
+    if (isFile("yarn.lock"))
+        return getBinaryUsing("yarn", directory, name);
+    return getBinaryUsing("npm", directory, name);
 }
 async function startCheck(name) {
     const response = await octa.checks.create({
         name,
-        ...(github_default()).context.repo,
-        head_sha: (github_default()).context.sha,
-        status: 'in_progress',
+        ...github.context.repo,
+        head_sha: github.context.sha,
+        status: "in_progress",
     });
     return response.data.id;
 }
@@ -5884,14 +5876,14 @@ function chunks(items, size = 50) {
     return chunks;
 }
 async function runESLint(args) {
-    const eslint = getBinary(options.directory, 'eslint');
-    const id = await startCheck('ESLint');
+    const eslint = getBinary(options.directory, "eslint");
+    const id = await startCheck("ESLint");
     try {
         const results = getESLintResults(eslint, args.filter((arg) => /\.(ts|tsx|vue)$/.test(arg)));
         let errors = 0;
         const annotations = [];
         for (const result of results) {
-            const fileName = external_path_default().relative(options.workspace, result.filePath);
+            const fileName = external_path_.relative(options.workspace, result.filePath);
             for (const message of result.messages) {
                 if (message.fix && options.fix)
                     continue;
@@ -5903,7 +5895,7 @@ async function runESLint(args) {
                     start_column: message.column,
                     end_line: message.endLine || message.line,
                     end_columnn: message.endColumn || message.endColumn,
-                    annotation_level: message.severity === 2 ? 'failure' : 'warning',
+                    annotation_level: message.severity === 2 ? "failure" : "warning",
                     message: `[${message.ruleId}] ${message.message}`,
                 });
             }
@@ -5913,48 +5905,48 @@ async function runESLint(args) {
         for (const payload of payloads) {
             await octa.checks.update({
                 check_run_id: id,
-                head_sha: (github_default()).context.sha,
-                owner: (github_default()).context.repo.owner,
-                repo: (github_default()).context.repo.repo,
-                status: ++index === payloads.length ? 'completed' : 'in_progress',
-                conclusion: errors ? 'failure' : 'success',
+                head_sha: github.context.sha,
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                status: ++index === payloads.length ? "completed" : "in_progress",
+                conclusion: errors ? "failure" : "success",
                 output: {
-                    title: 'ESLint',
-                    summary: `${errors} ${errors === 1 ? 'error' : 'errors'} found`,
+                    title: "ESLint",
+                    summary: `${errors} ${errors === 1 ? "error" : "errors"} found`,
                     annotations: payload,
                 },
             });
         }
     }
     catch (error) {
-        core_default().error(error);
+        (0,core.error)(error);
         await octa.checks.update({
             check_run_id: id,
-            head_sha: (github_default()).context.sha,
-            owner: (github_default()).context.repo.owner,
-            repo: (github_default()).context.repo.repo,
-            status: 'completed',
-            conclusion: 'failure',
+            head_sha: github.context.sha,
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            status: "completed",
+            conclusion: "failure",
             output: {
-                title: 'ESLint',
+                title: "ESLint",
                 summary: `${error.message} ${error.stack}`,
             },
         });
     }
     const changes = getLocalChangedFiles(args);
     for (const fileName of changes) {
-        const contents = external_fs_default().readFileSync(external_path_default().resolve(options.directory, fileName), { encoding: 'utf-8' });
-        await updateFile(fileName, contents, 'style(auto): eslint fix');
+        const contents = external_fs_.readFileSync(external_path_.resolve(options.directory, fileName), { encoding: "utf-8" });
+        await updateFile(fileName, contents, "style(auto): eslint fix");
     }
 }
 async function updateFile(fileName, contents, message) {
     const file = await getFileFromBranch(fileName);
     if (file && file.data && file.data.content !== contents) {
         await octa.repos.createOrUpdateFileContents({
-            ...(github_default()).context.repo,
+            ...github.context.repo,
             branch: process.env.GITHUB_HEAD_REF,
             path: fileName,
-            content: Buffer.from(contents).toString('base64'),
+            content: Buffer.from(contents).toString("base64"),
             message: `${message} ${fileName}`,
             sha: file.data.sha,
         });
@@ -5962,7 +5954,7 @@ async function updateFile(fileName, contents, message) {
 }
 function getFileFromBranch(fileName) {
     return octa.repos.getContent({
-        ...(github_default()).context.repo,
+        ...github.context.repo,
         ref: process.env.GITHUB_HEAD_REF,
         path: fileName,
     });
@@ -5970,27 +5962,26 @@ function getFileFromBranch(fileName) {
 function getESLintResults(eslint, args) {
     if (!args.length)
         return [];
-    const output = external_child_process_default().execSync(`${eslint} --fix --no-color --quiet --format json ${asCLIArgs(args)}`, {
+    const output = (0,external_child_process_namespaceObject.execSync)(`${eslint} --fix --no-color --quiet --format json ${asCLIArgs(args)}`, {
         cwd: options.directory,
-    })
-        .toString();
+    }).toString();
     return JSON.parse(output);
 }
 function getLocalChangedFiles(files) {
     const isChanged = new Set(files);
-    return external_child_process_default().execSync('git diff --name-only', { cwd: options.directory })
+    return (0,external_child_process_namespaceObject.execSync)("git diff --name-only", { cwd: options.directory })
         .toString()
-        .split('\n')
+        .split("\n")
         .map((fileName) => fileName.trim())
         .filter((fileName) => isChanged.has(fileName));
 }
 async function getChangedFiles() {
-    core_default().debug(`getChangedFiles`);
+    (0,core.debug)(`getChangedFiles`);
     if (!options.pr) {
-        core_default().warning('This is not a PR. Skipping.');
+        (0,core.warning)("This is not a PR. Skipping.");
         return [];
     }
-    const { owner, repo } = (github_default()).context.repo;
+    const { owner, repo } = github.context.repo;
     const config = octa.pulls.listFiles.endpoint.merge({
         owner,
         repo,
@@ -5999,26 +5990,28 @@ async function getChangedFiles() {
         page: 1,
     });
     const files = await octa.paginate(config);
-    files.forEach((file) => core_default().debug(`${file.filename} ${file.status}`));
-    return files.filter((file) => file.status !== 'removed').map((file) => file.filename);
+    files.forEach((file) => (0,core.debug)(`${file.filename} ${file.status}`));
+    return files
+        .filter((file) => file.status !== "removed")
+        .map((file) => file.filename);
 }
 async function runPrettier(files) {
-    const prettier = getBinary(options.directory, 'prettier');
-    const id = await startCheck('Prettier');
+    const prettier = getBinary(options.directory, "prettier");
+    const id = await startCheck("Prettier");
     try {
-        external_child_process_default().execSync(`${prettier} --ignore-unknown --write ${asCLIArgs(files)}`, {
+        (0,external_child_process_namespaceObject.execSync)(`${prettier} --ignore-unknown --write ${asCLIArgs(files)}`, {
             cwd: options.directory,
-            stdio: 'inherit',
+            stdio: "inherit",
         });
         await octa.checks.update({
             check_run_id: id,
-            head_sha: (github_default()).context.sha,
-            owner: (github_default()).context.repo.owner,
-            repo: (github_default()).context.repo.repo,
-            status: 'completed',
-            conclusion: 'success',
+            head_sha: github.context.sha,
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            status: "completed",
+            conclusion: "success",
             output: {
-                title: 'ESLint',
+                title: "ESLint",
                 summary: ``,
             },
         });
@@ -6026,25 +6019,25 @@ async function runPrettier(files) {
     catch (error) {
         await octa.checks.update({
             check_run_id: id,
-            head_sha: (github_default()).context.sha,
-            owner: (github_default()).context.repo.owner,
-            repo: (github_default()).context.repo.repo,
-            status: 'completed',
-            conclusion: 'failure',
+            head_sha: github.context.sha,
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            status: "completed",
+            conclusion: "failure",
             output: {
-                title: 'ESLint',
+                title: "ESLint",
                 summary: `${error.message} ${error.stack}`,
             },
         });
     }
     const changes = getLocalChangedFiles(files);
     for (const fileName of changes) {
-        const contents = external_fs_default().readFileSync(external_path_default().resolve(options.directory, fileName), { encoding: 'utf-8' });
-        await updateFile(fileName, contents, 'style(auto): prettier fix');
+        const contents = external_fs_.readFileSync(external_path_.resolve(options.directory, fileName), { encoding: "utf-8" });
+        await updateFile(fileName, contents, "style(auto): prettier fix");
     }
 }
 function asCLIArgs(args) {
-    return args.map((arg) => JSON.stringify(arg)).join(' ');
+    return args.map((arg) => JSON.stringify(arg)).join(" ");
 }
 async function main() {
     const files = await getChangedFiles();
@@ -6202,35 +6195,6 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => module['default'] :
-/******/ 				() => module;
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports

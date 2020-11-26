@@ -10,13 +10,8 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
 
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "sourceMap": true,
-
-    "removeComments": false,
-    "alwaysStrict": true,
-    "importHelpers": false
+    "alwaysStrict": true
   },
   "include": ["src"]
 }
